@@ -30,6 +30,19 @@
     return out;
   };
 
+  var isStaticSite = document.body.hasAttribute('data-static-site');
+  var contactEmail = document.body.getAttribute('data-email') || '';
+
+  function sendMail(form, subject) {
+    var fields = formData(form);
+    var body = Object.keys(fields)
+      .filter(function (key) { return key !== 'website' && fields[key]; })
+      .map(function (key) { return key + ': ' + fields[key]; })
+      .join('\n');
+    window.location.href = 'mailto:' + contactEmail +
+      '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+  }
+
   // ---- Navigation (small screens) ----
   var toggle = document.querySelector('.nav-toggle');
   if (toggle) {
@@ -44,6 +57,10 @@
   document.querySelectorAll('[data-wire-form]').forEach(function (form) {
     form.addEventListener('submit', function (e) {
       e.preventDefault();
+      if (isStaticSite) {
+        sendMail(form, 'Subscribe to the AMR lot sheet');
+        return;
+      }
       postJson('/api/subscribe', formData(form))
         .then(function () {
           form.hidden = true;
@@ -59,6 +76,10 @@
   if (enquiryForm) {
     enquiryForm.addEventListener('submit', function (e) {
       e.preventDefault();
+      if (isStaticSite) {
+        sendMail(enquiryForm, 'Website enquiry for the AMR desk');
+        return;
+      }
       var errEl = document.querySelector('[data-enquiry-error]');
       errEl.hidden = true;
       postJson('/api/enquiry', formData(enquiryForm))
@@ -91,6 +112,15 @@
   document.addEventListener('click', function (e) {
     var btn = e.target.closest('[data-reveal]');
     if (!btn) return;
+    if (isStaticSite) {
+      var staticCard = btn.closest('.lot-card');
+      var staticTitle = staticCard ? staticCard.querySelector('.lot-title').textContent : '';
+      var staticMessage = 'Regarding lot ' + btn.getAttribute('data-reveal') +
+        (staticTitle ? ' — ' + staticTitle : '');
+      window.open('https://wa.me/' + WHATSAPP + '?text=' +
+        encodeURIComponent(staticMessage), '_blank', 'noopener');
+      return;
+    }
     var card = btn.closest('.lot-card');
     openReveal(btn.getAttribute('data-reveal'), card ? card.querySelector('.lot-title').textContent : '');
   });
@@ -168,7 +198,7 @@
       .catch(function () { /* transient — the next poll will succeed */ });
   }
 
-  if (document.querySelector('[data-board]')) {
+  if (!isStaticSite && document.querySelector('[data-board]')) {
     setInterval(function () {
       refreshBoard('offers', '/api/offers',
         'The desk currently has no open lots. Enquiries for specific material are welcome.');

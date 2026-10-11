@@ -55,7 +55,7 @@ if (!whatsappEnabled) {
     '[config] WhatsApp is NOT configured — the website and seed lots run normally; ' +
       'webhook, desk commands and enquiry pushes are disabled. Set META_APP_SECRET, ' +
       'WHATSAPP_VERIFY_TOKEN, WHATSAPP_ACCESS_TOKEN, WHATSAPP_PHONE_NUMBER_ID and ' +
-      'ADMIN_WHATSAPP_NUMBERS to enable the live desk. See README.md section 4.'
+      'ADMIN_WHATSAPP_NUMBERS to enable the live desk. See README.md section 5.'
   );
 }
 

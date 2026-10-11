@@ -6,3 +6,4 @@ data/
 *.log
 .DS_Store
 public/downloads/*.pdf
+dist/

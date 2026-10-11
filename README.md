@@ -27,9 +27,26 @@ npm start       # http://localhost:3000
 
 On first boot the desk seeds itself with sample lots. Data lives in `./data/`.
 
+## 2. Build a static website
+
+```bash
+BASE_URL=https://your-domain.example npm run build:static
+```
+
+The complete public site is written to `dist/`, including the home page,
+service and legal pages, each Ledger note, the 404 page, SEO files, assets and
+the company-profile PDF. Publish the contents of `dist/` with any static web
+host. Set `BASE_URL` to the final origin when building so canonical links and
+the sitemap use the correct domain.
+
+The Live Desk is a snapshot of the database at build time and changes only
+after rebuilding. Static forms open the visitor's email client, and lot-detail
+requests open WhatsApp; server-only features such as lead capture, live updates,
+administration and the WhatsApp webhook require the Node.js service.
+
 ---
 
-## 2. Deploy on Render — exact clicks
+## 3. Deploy on Render — exact clicks
 
 1. Push this folder to a GitHub repository (private is fine).
 2. Go to **dashboard.render.com → New → Blueprint**.
@@ -47,7 +64,7 @@ On first boot the desk seeds itself with sample lots. Data lives in `./data/`.
 
 `BASE_URL` drives every absolute link (sitemap, canonical tags, WhatsApp
 confirmations). It is never hard-coded, so the later custom-domain switch is
-one variable change — see section 5.
+one variable change — see section 6.
 
 ### Keeping the free instance awake
 
@@ -66,7 +83,7 @@ seconds to wake. That delays webhook replies and enquiry pushes badly.
 
 ---
 
-## 3. What runs where
+## 4. What runs where
 
 | Path | Purpose |
 | --- | --- |
@@ -81,20 +98,20 @@ seconds to wake. That delays webhook replies and enquiry pushes badly.
 
 ---
 
-## 4. WhatsApp Business Cloud API — full setup
+## 5. WhatsApp Business Cloud API — full setup
 
 Written for a smart non-developer. Allow 45 minutes. You need: a Facebook
 account, and the phone number the desk will use (it must NOT already be
 registered on the WhatsApp consumer or Business app — Meta takes it over).
 
-### 4.1 Create the Meta developer app
+### 5.1 Create the Meta developer app
 
 1. Go to **developers.facebook.com** → log in → **My Apps → Create App**.
 2. Choose **Business** as the app type → Next.
 3. Name it (e.g. "AMR Desk"), enter your email, click **Create App**.
 4. If asked for a Business Portfolio, create one ("AMR Universal Ltd").
 
-### 4.2 Add the WhatsApp product
+### 5.2 Add the WhatsApp product
 
 1. On the app dashboard, find **WhatsApp** → click **Set up**.
 2. Meta gives you a **test phone number** immediately. You can wire the whole
@@ -105,7 +122,7 @@ registered on the WhatsApp consumer or Business app — Meta takes it over).
    - The temporary access token (ignore it — it dies in 24 h; the permanent
      one comes next).
 
-### 4.3 Permanent access token via a System User
+### 5.3 Permanent access token via a System User
 
 1. Go to **business.facebook.com → Settings** (gear icon) → **Users →
    System users** → **Add**.
@@ -117,13 +134,13 @@ registered on the WhatsApp consumer or Business app — Meta takes it over).
    **whatsapp_business_management** → Generate.
 5. Copy the token somewhere safe. This is `WHATSAPP_ACCESS_TOKEN`.
 
-### 4.4 App secret
+### 5.4 App secret
 
 **developers.facebook.com → your app → App settings → Basic → App secret →
 Show**. This is `META_APP_SECRET` (used to verify that webhook calls really
 come from Meta).
 
-### 4.5 Register the real business number
+### 5.5 Register the real business number
 
 1. **WhatsApp → API Setup → Add phone number** (in the "From" dropdown).
 2. Enter the business display name, category, and the phone number; verify
@@ -133,7 +150,7 @@ come from Meta).
 4. Business verification (Business Settings → Security Centre) lifts the
    messaging limits; start it early, it can take a few days.
 
-### 4.6 Set the environment variables on Render
+### 5.6 Set the environment variables on Render
 
 Service → **Environment** → add:
 
@@ -147,7 +164,7 @@ Service → **Environment** → add:
 
 Save; the service redeploys.
 
-### 4.7 Point the webhook at the site
+### 5.7 Point the webhook at the site
 
 1. **developers.facebook.com → your app → WhatsApp → Configuration**.
 2. **Webhook → Edit**:
@@ -158,7 +175,7 @@ Save; the service redeploys.
 3. Still on that page: **Webhook fields → Manage** → subscribe to
    **messages**. Nothing else is needed.
 
-### 4.8 Test
+### 5.8 Test
 
 From Nishant's phone, WhatsApp the business number: `HELP`. The cheat sheet
 should come back within seconds. Then post a first lot (see
@@ -167,12 +184,12 @@ refusal and is then ignored.
 
 ---
 
-## 5. The custom-domain switch (later)
+## 6. The custom-domain switch (later)
 
 1. Buy the domain; in Render: service → **Settings → Custom Domains → Add**,
    follow the DNS instructions.
 2. Change `BASE_URL` to `https://www.yourdomain.com` → Save.
-3. Update the webhook Callback URL (step 4.7) to the new domain.
+3. Update the webhook Callback URL (step 5.7) to the new domain.
 
 Done. Nothing else references the old URL.
 
@@ -187,7 +204,7 @@ and shipping documents matters.
 
 ---
 
-## 6. Content & configuration
+## 7. Content & configuration
 
 - **Company particulars** (footer, legal pages, PDF): `src/company-config.js`.
   Drop in the company number and registered office after incorporation.
@@ -210,7 +227,7 @@ and shipping documents matters.
   one `@font-face` block to `public/css/style.css` — do not use Google Fonts
   hosting, it would undermine the no-third-party claim.
 
-## 7. Data & backups
+## 8. Data & backups
 
 - SQLite database: `DATA_DIR/amr.sqlite` (lots, leads, subscribers,
   notification queue). Lot photos: `DATA_DIR/media/`.
